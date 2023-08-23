@@ -1,0 +1,7 @@
+build/
+bin/
+
+# Vim temporary files
+*.swp
+*.swo
+
