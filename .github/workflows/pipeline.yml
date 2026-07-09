@@ -1,0 +1,129 @@
+name: PAN-GWES Pipeline
+
+on:
+  workflow_dispatch:
+
+jobs:
+  pipeline_test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - dataset_name: efc
+            assemblies_dir: test_efc_assemblies
+            output_stem: test_efc_k31
+            expected_paths: 8
+          - dataset_name: maela
+            assemblies_dir: test_maela_assemblies
+            output_stem: test_maela_k31
+            expected_paths: 8
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Miniconda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          auto-activate-base: false
+          channels: conda-forge,bioconda
+          channel-priority: true
+          activate-environment: pangwes-pipeline
+
+      - name: Install dependencies
+        shell: bash -el {0}
+        run: conda install -y cuttlefish r-base spydrpick
+
+      - name: Build PAN-GWES binaries
+        run: make -j"$(nproc)"
+
+      - name: Prepare pipeline input (${{ matrix.dataset_name }})
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p "${{ runner.temp }}/pipeline/cuttlefish_workdir"
+
+          cd "${{ runner.temp }}/pipeline"
+
+          find "${{ github.workspace }}/test_data/${{ matrix.assemblies_dir }}" -type f -name '*.fa' | \
+              sort > "assemblies.txt"
+
+          test -s "assemblies.txt"
+          test "$(wc -l < "assemblies.txt")" -gt 0
+
+      - name: Run pipeline (${{ matrix.dataset_name }})
+        shell: bash -el {0}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+
+          cd "${{ runner.temp }}/pipeline"
+          ulimit -n 4096
+          THREADS="$(nproc)"
+
+          cuttlefish build \
+            --list assemblies.txt \
+            --kmer-len 31 \
+            --threads "${THREADS}" \
+            --output "${{ matrix.output_stem }}" \
+            --work-dir "cuttlefish_workdir" \
+            -f 1
+
+          test -s "${{ matrix.output_stem }}.gfa1"
+
+          "${{ github.workspace }}/bin/gfa_parser" \
+            --gfa-file "${{ matrix.output_stem }}.gfa1" \
+            --gfa-format 1 \
+            --k-mer-length 31 \
+            --output-stem "${{ matrix.output_stem }}"
+
+          test -s "${{ matrix.output_stem }}.unitigs"
+          test "$(wc -l < "${{ matrix.output_stem }}.unitigs")" -gt 0
+          test -s "${{ matrix.output_stem }}.fasta"
+          test -s "${{ matrix.output_stem }}.paths"
+          test "$(wc -l < "${{ matrix.output_stem }}.paths")" -eq "${{ matrix.expected_paths }}"
+          test "$(find "${{ matrix.output_stem }}_paths" -type f -name '*.edges' | wc -l)" \
+              -eq "${{ matrix.expected_paths }}"
+
+          SpydrPick \
+            --alignmentfile "${{ matrix.output_stem }}.fasta" \
+            --maf-threshold 0.05 \
+            --mi-values 1000000 \
+            --threads "${THREADS}"
+
+          QUERY_FILE="$(find . -type f -name '*spydrpick_couplings*edges*' | sort | head -n 1)"
+          test -s "${QUERY_FILE}"
+
+          "${{ github.workspace }}/bin/unitig_distance" \
+            --unitigs-file "${{ matrix.output_stem }}.unitigs" \
+            --k-mer-length 31 \
+            --sgg-paths-file "${{ matrix.output_stem }}.paths" \
+            --queries-file "${QUERY_FILE}" \
+            --threads "${THREADS}" \
+            --queries-one-based \
+            --output-stem "${{ matrix.output_stem }}"
+
+          output_files=( "${{ matrix.output_stem }}".ud_* )
+          test "${#output_files[@]}" -eq 1
+          test -s "${output_files[0]}"
+          test "$(wc -l < "${output_files[0]}")" -gt 0
+
+      - name: Test GWES plot script (${{ matrix.dataset_name }})
+        shell: bash -el {0}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+
+          cd "${{ runner.temp }}/pipeline"
+
+          output_files=( "${{ matrix.output_stem }}".ud_* )
+          test "${#output_files[@]}" -eq 1
+
+          Rscript "${{ github.workspace }}/plot_scripts/gwes_plot.r" \
+            "${output_files[0]}" \
+            "${{ matrix.output_stem }}_gwes_plot.png" \
+            0 \
+            0
+
+          test -s "${{ matrix.output_stem }}_gwes_plot.png"

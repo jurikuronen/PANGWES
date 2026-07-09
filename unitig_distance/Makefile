@@ -1,28 +1,15 @@
-IDIR = include/unitig_distance
-BUILDDIR = bin
-OBJDIR = build
-SRCDIR = src
-EXECNAME = unitig_distance
+PROJECT           := unitig_distance
 
-CXX = g++
-CXXFLAGS = -std=c++11 -pthread -march=native -O2 -pedantic -Wall -I$(IDIR)
-LDFLAGS = -pthread
+# Keep this include order.
+include ../mk/config.mk
+include ../mk/common.mk
+include ../mk/flags.mk
+include ../mk/lint.mk
+include ../mk/sources.mk
+include ../mk/rules.mk
+include ../mk/targets.mk
+include ../mk/version.mk
 
-SOURCES = $(shell find $(SRCDIR) -type f -name *.cpp)
-OBJECTS = $(patsubst $(SRCDIR)/%,$(OBJDIR)/%,$(SOURCES:.cpp=.o))
-DEPENDS = $(patsubst $(SRCDIR)/%,$(OBJDIR)/%,$(SOURCES:.cpp=.d))
-
-.PHONY: all clean
-
-all: $(EXECNAME)
-
-clean:
-	\rm $(OBJDIR)/*.o $(OBJDIR)/*.d $(BUILDDIR)/$(EXECNAME)
-
--include $(DEPENDS)
-
-$(EXECNAME): $(OBJECTS)
-	mkdir -p $(BUILDDIR); $(CXX) $(LDFLAGS) $(OBJECTS) -o $(BUILDDIR)/$(EXECNAME)
-
-$(OBJDIR)/%.o: $(SRCDIR)/%.cpp
-	mkdir -p $(OBJDIR); $(CXX) $(CXXFLAGS) -MMD -MP -c $< -o $@
+# End-to-end tests runner and results verification script for `unitig_distance`.
+RUNE2ETESTS       := $(PROJECTDIR)/scripts/run_unitig_distance_e2e_tests.sh
+TESTRUNNERSCRIPT  := $(PROJECTDIR)/scripts/verify_unitig_distance_results.pl
