@@ -2,22 +2,15 @@ name: PAN-GWES Pipeline
 
 on:
   workflow_dispatch:
+  push:
+    branches: ["main", "development"]
+  pull_request:
+    branches: ["main", "development"]
 
 jobs:
   pipeline_test:
+    name: Pipeline tests
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - dataset_name: efc
-            assemblies_dir: test_efc_assemblies
-            output_stem: test_efc_k31
-            expected_paths: 8
-          - dataset_name: maela
-            assemblies_dir: test_maela_assemblies
-            output_stem: test_maela_k31
-            expected_paths: 8
 
     steps:
       - uses: actions/checkout@v4
@@ -37,28 +30,28 @@ jobs:
       - name: Build PAN-GWES binaries
         run: make -j"$(nproc)"
 
-      - name: Prepare pipeline input (${{ matrix.dataset_name }})
+      - name: Prepare pipeline input (EFC)
         shell: bash
         run: |
           set -euo pipefail
 
-          mkdir -p "${{ runner.temp }}/pipeline/cuttlefish_workdir"
+          mkdir -p "${{ runner.temp }}/pipeline/efc/cuttlefish_workdir"
 
-          cd "${{ runner.temp }}/pipeline"
+          cd "${{ runner.temp }}/pipeline/efc"
 
-          find "${{ github.workspace }}/test_data/${{ matrix.assemblies_dir }}" -type f -name '*.fa' | \
+          find "${{ github.workspace }}/test_data/test_efc_assemblies" -type f -name '*.fa' | \
               sort > "assemblies.txt"
 
           test -s "assemblies.txt"
           test "$(wc -l < "assemblies.txt")" -gt 0
 
-      - name: Run pipeline (${{ matrix.dataset_name }})
+      - name: Run pipeline (EFC)
         shell: bash -el {0}
         run: |
           set -euo pipefail
           shopt -s nullglob
 
-          cd "${{ runner.temp }}/pipeline"
+          cd "${{ runner.temp }}/pipeline/efc"
           ulimit -n 4096
           THREADS="$(nproc)"
 
@@ -66,28 +59,27 @@ jobs:
             --list assemblies.txt \
             --kmer-len 31 \
             --threads "${THREADS}" \
-            --output "${{ matrix.output_stem }}" \
+            --output test_efc_k31 \
             --work-dir "cuttlefish_workdir" \
             -f 1
 
-          test -s "${{ matrix.output_stem }}.gfa1"
+          test -s "test_efc_k31.gfa1"
 
           "${{ github.workspace }}/bin/gfa_parser" \
-            --gfa-file "${{ matrix.output_stem }}.gfa1" \
+            --gfa-file test_efc_k31.gfa1 \
             --gfa-format 1 \
             --k-mer-length 31 \
-            --output-stem "${{ matrix.output_stem }}"
+            --output-stem test_efc_k31
 
-          test -s "${{ matrix.output_stem }}.unitigs"
-          test "$(wc -l < "${{ matrix.output_stem }}.unitigs")" -gt 0
-          test -s "${{ matrix.output_stem }}.fasta"
-          test -s "${{ matrix.output_stem }}.paths"
-          test "$(wc -l < "${{ matrix.output_stem }}.paths")" -eq "${{ matrix.expected_paths }}"
-          test "$(find "${{ matrix.output_stem }}_paths" -type f -name '*.edges' | wc -l)" \
-              -eq "${{ matrix.expected_paths }}"
+          test -s "test_efc_k31.unitigs"
+          test "$(wc -l < "test_efc_k31.unitigs")" -gt 0
+          test -s "test_efc_k31.fasta"
+          test -s "test_efc_k31.paths"
+          test "$(wc -l < "test_efc_k31.paths")" -eq 8
+          test "$(find "test_efc_k31_paths" -type f -name '*.edges' | wc -l)" -eq 8
 
           SpydrPick \
-            --alignmentfile "${{ matrix.output_stem }}.fasta" \
+            --alignmentfile test_efc_k31.fasta \
             --maf-threshold 0.05 \
             --mi-values 1000000 \
             --threads "${THREADS}"
@@ -96,34 +88,124 @@ jobs:
           test -s "${QUERY_FILE}"
 
           "${{ github.workspace }}/bin/unitig_distance" \
-            --unitigs-file "${{ matrix.output_stem }}.unitigs" \
+            --unitigs-file test_efc_k31.unitigs \
             --k-mer-length 31 \
-            --sgg-paths-file "${{ matrix.output_stem }}.paths" \
+            --sgg-paths-file test_efc_k31.paths \
             --queries-file "${QUERY_FILE}" \
             --threads "${THREADS}" \
             --queries-one-based \
-            --output-stem "${{ matrix.output_stem }}"
+            --output-stem test_efc_k31
 
-          output_files=( "${{ matrix.output_stem }}".ud_* )
+          output_files=( test_efc_k31.ud_* )
           test "${#output_files[@]}" -eq 1
           test -s "${output_files[0]}"
           test "$(wc -l < "${output_files[0]}")" -gt 0
 
-      - name: Test GWES plot script (${{ matrix.dataset_name }})
+      - name: Test GWES plot script (EFC)
         shell: bash -el {0}
         run: |
           set -euo pipefail
           shopt -s nullglob
 
-          cd "${{ runner.temp }}/pipeline"
+          cd "${{ runner.temp }}/pipeline/efc"
 
-          output_files=( "${{ matrix.output_stem }}".ud_* )
+          output_files=( test_efc_k31.ud_* )
           test "${#output_files[@]}" -eq 1
 
           Rscript "${{ github.workspace }}/plot_scripts/gwes_plot.r" \
             "${output_files[0]}" \
-            "${{ matrix.output_stem }}_gwes_plot.png" \
+            test_efc_k31_gwes_plot.png \
             0 \
             0
 
-          test -s "${{ matrix.output_stem }}_gwes_plot.png"
+          test -s "test_efc_k31_gwes_plot.png"
+
+      - name: Prepare pipeline input (Maela)
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p "${{ runner.temp }}/pipeline/maela/cuttlefish_workdir"
+
+          cd "${{ runner.temp }}/pipeline/maela"
+
+          find "${{ github.workspace }}/test_data/test_maela_assemblies" -type f -name '*.fa' | \
+              sort > "assemblies.txt"
+
+          test -s "assemblies.txt"
+          test "$(wc -l < "assemblies.txt")" -gt 0
+
+      - name: Run pipeline (Maela)
+        shell: bash -el {0}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+
+          cd "${{ runner.temp }}/pipeline/maela"
+          ulimit -n 4096
+          THREADS="$(nproc)"
+
+          cuttlefish build \
+            --list assemblies.txt \
+            --kmer-len 31 \
+            --threads "${THREADS}" \
+            --output test_maela_k31 \
+            --work-dir "cuttlefish_workdir" \
+            -f 1
+
+          test -s "test_maela_k31.gfa1"
+
+          "${{ github.workspace }}/bin/gfa_parser" \
+            --gfa-file test_maela_k31.gfa1 \
+            --gfa-format 1 \
+            --k-mer-length 31 \
+            --output-stem test_maela_k31
+
+          test -s "test_maela_k31.unitigs"
+          test "$(wc -l < "test_maela_k31.unitigs")" -gt 0
+          test -s "test_maela_k31.fasta"
+          test -s "test_maela_k31.paths"
+          test "$(wc -l < "test_maela_k31.paths")" -eq 8
+          test "$(find "test_maela_k31_paths" -type f -name '*.edges' | wc -l)" -eq 8
+
+          SpydrPick \
+            --alignmentfile test_maela_k31.fasta \
+            --maf-threshold 0.05 \
+            --mi-values 1000000 \
+            --threads "${THREADS}"
+
+          QUERY_FILE="$(find . -type f -name '*spydrpick_couplings*edges*' | sort | head -n 1)"
+          test -s "${QUERY_FILE}"
+
+          "${{ github.workspace }}/bin/unitig_distance" \
+            --unitigs-file test_maela_k31.unitigs \
+            --k-mer-length 31 \
+            --sgg-paths-file test_maela_k31.paths \
+            --queries-file "${QUERY_FILE}" \
+            --threads "${THREADS}" \
+            --queries-one-based \
+            --output-stem test_maela_k31
+
+          output_files=( test_maela_k31.ud_* )
+          test "${#output_files[@]}" -eq 1
+          test -s "${output_files[0]}"
+          test "$(wc -l < "${output_files[0]}")" -gt 0
+
+      - name: Test GWES plot script (Maela)
+        shell: bash -el {0}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+
+          cd "${{ runner.temp }}/pipeline/maela"
+
+          output_files=( test_maela_k31.ud_* )
+          test "${#output_files[@]}" -eq 1
+
+          Rscript "${{ github.workspace }}/plot_scripts/gwes_plot.r" \
+            "${output_files[0]}" \
+            test_maela_k31_gwes_plot.png \
+            0 \
+            0
+
+          test -s "test_maela_k31_gwes_plot.png"
