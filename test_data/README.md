@@ -17,7 +17,7 @@ This dataset is derived from long-read **Enterococcus faecalis** assemblies from
 > Willems RJL, Corander J.
 > 2021.
 > Apparent nosocomial adaptation of *Enterococcus faecalis* predates the modern hospital era.
-> *Nature Communications* **12**, 1523.
+> *Nature Communications* **12**:1523.
 > [https://doi.org/10.1038/s41467-021-21749-5](https://doi.org/10.1038/s41467-021-21749-5)
 
 For automated testing, eight assemblies were selected and shortened so that the tests run quickly. These assemblies were
@@ -45,7 +45,7 @@ This dataset is derived from fragmented **Streptococcus pneumoniae** Maela assem
 > Salter SJ, Harris D, Nosten F, Goldblatt D, Corander J, Parkhill J, Turner P, Bentley SD.
 > 2014.
 > Dense genomic sampling identifies highways of pneumococcal recombination.
-> *Nature Genetics* **46**, 305–309.
+> *Nature Genetics* **46**:305–309.
 > [https://doi.org/10.1038/ng.2895](https://doi.org/10.1038/ng.2895)
 
 As with the EFC dataset, eight assemblies were selected and shortened for automated testing. The dataset is included to

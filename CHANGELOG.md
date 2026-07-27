@@ -120,8 +120,8 @@ Notable changes to this project will be documented in this file. Experimental ve
 > Bentley SD, Croucher NJ, Pensar J, Lees JA, Tonkin-Hill G, Corander J.
 > 2024.
 > Pangenome-spanning epistasis and coselection analysis via de Bruijn graphs.
-> Genome Research, 34(7):1081–1088.
-> https://doi.org/10.1101/gr.278485.123
+> *Genome Research* **34**(7):1081–1088.
+> [https://doi.org/10.1101/gr.278485.123](https://doi.org/10.1101/gr.278485.123)
 
 - Included **gfa1_parser**, which converts [Cuttlefish](https://github.com/COMBINE-lab/cuttlefish)-provided GFA 1.0 files
   into inputs for [SpydrPick](https://github.com/santeripuranen/SpydrPick) and **unitig_distance**.

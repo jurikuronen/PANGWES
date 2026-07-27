@@ -172,9 +172,10 @@ MIT License (see [LICENSE](../LICENSE)).
 **PAN-GWES/gfa_parser** was developed as part of an academic project. Please cite:
 
 - Kuronen J, Horsfield ST, Pöntinen AK, Mallawaarachchi S, Arredondo-Alonso S, Thorpe H, Gladstone RA, Willems RJL,
-  Bentley SD, Croucher NJ, Pensar J, Lees JA, Tonkin-Hill G, Corander J. 2024.
+  Bentley SD, Croucher NJ, Pensar J, Lees JA, Tonkin-Hill G, Corander J.
+  2024.
   Pangenome-spanning epistasis and coselection analysis via de Bruijn graphs.
-  Genome Research, 34(7):1081–1088.
-  https://doi.org/10.1101/gr.278485.123
+  *Genome Research* **34**(7):1081–1088.
+  [https://doi.org/10.1101/gr.278485.123](https://doi.org/10.1101/gr.278485.123)
 
 - https://github.com/jurikuronen/PANGWES
