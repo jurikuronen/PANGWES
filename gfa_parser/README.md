@@ -15,7 +15,7 @@ compilers:
 **gfa_parser** is part of the PAN-GWES pipeline described in *Kuronen et al. (2024)* (see [Cite](#cite)). It is intended
 to be used together with:
 1. [COMBINE-lab/cuttlefish](https://github.com/COMBINE-lab/cuttlefish), which constructs a GFA-formatted cdBG from
-   reference sequences.
+   input genome assemblies.
 2. [santeripuranen/SpydrPick](https://github.com/santeripuranen/SpydrPick), which computes mutual-information scores and
    produces a list of high-scoring candidate unitig pairs.
 3. [unitig_distance](../unitig_distance), which computes shortest-path distance statistics between pairs of
@@ -81,7 +81,7 @@ More information is available by running `gfa_parser --help`.
 
 ## Parsing GFA 1.0 files
 
-The parser is intentionally restricted to the requirements of the current PAN-GWES workflow.
+The parser is intentionally restricted to the requirements of the current PAN-GWES pipeline.
 
 **gfa_parser** reads only Segment (`S`), Link (`L`) and Path (`P`) lines and ignores all other GFA 1.0 line types. It
 validates only links defined by Link lines and assumes that every adjacency in a Path line has a corresponding Link
@@ -103,6 +103,9 @@ The parser produces deterministic output.
 ## Output
 
 Given an output stem of `STEM`, **gfa_parser** writes the following files and directories.
+
+If an output filename or directory already exists, a unique suffix from `.1` to `.256` is appended to avoid overwriting
+the existing one.
 
 ### Unitigs file (`STEM.unitigs`)
 
@@ -130,7 +133,7 @@ Contains the path to each SGG `.edges` file, one path per line. The files are st
 
 ### Path edge-list files (`STEM_paths/*.edges`)
 
-Each file contains an edge list derived from a GFA 1.0 Path (`P`) line for one reference. These files represent SGG edge
+Each file contains an edge list derived from GFA 1.0 Path (`P`) lines for one reference. These files represent SGG edge
 lists for **unitig_distance**.
 
 Each file contains whitespace-separated lines in the following format:

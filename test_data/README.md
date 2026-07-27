@@ -33,8 +33,8 @@ used to construct a compacted de Bruijn graph (cdBG) with
 - `test_efc_k31.unitigs`: List of maximal unitigs extracted from the cdBG.
 - `test_efc_k31.paths`: List of paths to `*.edges` files used to build single-genome graphs (SGGs).
 - `test_efc_k31_paths/*.edges`: SGG edge lists consisting of cdBG unitig pairs and their orientations.
-- `test_efc_k31.queries`: Example unitig-pair queries and precomputed expected results in the
-  [SpydrPick](https://github.com/santeripuranen/SpydrPick) output format.
+- `test_efc_k31.queries`: Example unitig-pair queries in the [SpydrPick](https://github.com/santeripuranen/SpydrPick)
+  output format with precomputed expected **unitig_distance** results.
 - `test_efc_assemblies/*.fa`: Shortened assemblies used in the pipeline tests.
 
 ### Maela dataset
@@ -64,8 +64,8 @@ way as the EFC test files.
 
 ### About the test data
 
-The source data are available from the [European Nucleotide Archive](https://www.ebi.ac.uk/ena/browser/home); see the
-cited studies.
+The source data are available from the [European Nucleotide Archive](https://www.ebi.ac.uk/ena/browser/home). Please see
+the cited studies for more information.
 
 ## Automated testing
 
@@ -85,6 +85,8 @@ files.
 The pipeline tests run the PAN-GWES pipeline on the shortened EFC and Maela assemblies. They build a cdBG with
 [Cuttlefish](https://github.com/COMBINE-lab/cuttlefish), parse the resulting GFA with `gfa_parser`, create unitig-pair
 queries with [SpydrPick](https://github.com/santeripuranen/SpydrPick) and run `unitig_distance` on the prepared outputs.
+
+Pipeline tests only run in CI.
 
 ## Manual runs
 

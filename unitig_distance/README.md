@@ -12,7 +12,7 @@ compilers:
 **unitig_distance** is part of the PAN-GWES pipeline described in *Kuronen et al. (2024)* (see [Cite](#cite)). It is
 intended to be used together with:
 1. [COMBINE-lab/cuttlefish](https://github.com/COMBINE-lab/cuttlefish), which constructs a GFA-formatted cdBG from
-   reference sequences.
+   input genome assemblies.
 2. [gfa_parser](../gfa_parser), which converts GFA files into input formats suitable for **unitig_distance**
    and **SpydrPick**.
 3. [santeripuranen/SpydrPick](https://github.com/santeripuranen/SpydrPick), which computes mutual-information scores and
