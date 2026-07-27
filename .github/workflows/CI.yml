@@ -1,0 +1,121 @@
+name: PAN-GWES CI
+
+on:
+  push:
+    branches: ["main", "development"]
+  pull_request:
+    branches: ["main", "development"]
+
+jobs:
+  build:
+    name: Build / ${{ matrix.project }} / ${{ matrix.cfg.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        project: &binary_projects [gfa_parser, unitig_distance]
+        cfg:
+          - { name: release, target: all }
+          - { name: development, target: dev }
+          - { name: AddressSanitizer, target: asan }
+          - { name: ThreadSanitizer, target: tsan }
+          - { name: UndefinedBehaviorSanitizer, target: ubsan }
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build (${{ matrix.cfg.name }})
+        run: make -C ${{ matrix.project }} -j"$(nproc)" ${{ matrix.cfg.target }}
+
+  unit_integration_tests:
+    name: Tests / ${{ matrix.project }} / ${{ matrix.target.name }}
+    runs-on: ubuntu-latest
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        project: &all_projects [common, gfa_parser, unitig_distance]
+        target:
+          - { name: Unit tests, make_target: check-unit }
+          - { name: Integration tests, make_target: check-integration }
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: ${{ matrix.target.name }}
+        run: make -C ${{ matrix.project }} -j"$(nproc)" ${{ matrix.target.make_target }}
+
+  unit_integration_tests_with_sanitizers:
+    name: Tests / ${{ matrix.project }} / All tests / ${{ matrix.sanitizer.name }}
+    runs-on: ubuntu-latest
+    needs: unit_integration_tests
+    strategy:
+      fail-fast: false
+      matrix:
+        project: *all_projects
+        sanitizer:
+          - { name: AddressSanitizer, key: asan }
+          - { name: ThreadSanitizer, key: tsan, reduce_aslr: true }
+          - { name: UndefinedBehaviorSanitizer, key: ubsan }
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reduce ASLR for ThreadSanitizer
+        if: ${{ matrix.sanitizer.reduce_aslr == true }}
+        run: sudo sysctl vm.mmap_rnd_bits=30
+
+      - name: Unit and integration tests (${{ matrix.sanitizer.name }})
+        run: make -C ${{ matrix.project }} -j"$(nproc)" ${{ format('check-{0}', matrix.sanitizer.key) }}
+
+  e2e_tests:
+    name: End-to-end tests / ${{ matrix.project }}
+    runs-on: ubuntu-latest
+    needs: unit_integration_tests
+    strategy:
+      fail-fast: false
+      matrix:
+        project: *binary_projects
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: End-to-end tests
+        run: make -C ${{ matrix.project }} -j"$(nproc)" check-e2e
+
+  e2e_tests_with_sanitizers:
+    name: End-to-end tests / ${{ matrix.project }} / ${{ matrix.sanitizer.name }}
+    runs-on: ubuntu-latest
+    needs: unit_integration_tests_with_sanitizers
+    strategy:
+      fail-fast: false
+      matrix:
+        project: *binary_projects
+        sanitizer:
+          - { name: AddressSanitizer, key: asan }
+          - { name: ThreadSanitizer, key: tsan, reduce_aslr: true }
+          - { name: UndefinedBehaviorSanitizer, key: ubsan }
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reduce ASLR for ThreadSanitizer
+        if: ${{ matrix.sanitizer.reduce_aslr == true }}
+        run: sudo sysctl vm.mmap_rnd_bits=30
+
+      - name: End-to-end tests (${{ matrix.sanitizer.name }})
+        run: make -C ${{ matrix.project }} -j"$(nproc)" ${{ format('check-e2e-{0}', matrix.sanitizer.key) }}
+
+  lint:
+    name: Lint / ${{ matrix.project }}
+    runs-on: ubuntu-latest
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        project: *all_projects
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install lint requirements
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends clang-tidy shellcheck libperl-critic-perl r-base r-cran-lintr
+
+      - name: Lint
+        run: make -C ${{ matrix.project }} -j"$(nproc)" lint

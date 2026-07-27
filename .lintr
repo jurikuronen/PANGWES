@@ -1,0 +1,6 @@
+linters: linters_with_defaults(
+    line_length_linter = line_length_linter(length = 120L),
+    indentation_linter = indentation_linter(indent = 4L),
+    object_length_linter = NULL
+  )
+error_on_lint: TRUE

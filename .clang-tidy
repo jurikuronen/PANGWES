@@ -1,0 +1,22 @@
+Checks: >
+  clang-analyzer-*,
+  concurrency-*,
+  bugprone-*,
+  performance-*,
+  readability-*,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-branch-clone,
+  -bugprone-macro-parentheses,
+  -bugprone-sizeof-container,
+  -concurrency-mt-unsafe,
+  -performance-avoid-endl,
+  -performance-move-const-arg,
+  -readability-function-cognitive-complexity,
+  -readability-function-size,
+  -readability-magic-numbers,
+  -readability-named-parameter,
+  -readability-redundant-member-init,
+  -readability-suspicious-call-argument
+
+WarningsAsErrors: '*'
+HeaderFilterRegex: '.*/(include|src|tests)/.*'

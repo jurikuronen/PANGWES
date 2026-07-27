@@ -1,0 +1,9 @@
+# Build folders.
+build/
+bin/
+
+# R history file.
+*.Rhistory
+
+# unitig_distance output written under test_data.
+test_data/*.ud_0_based*
