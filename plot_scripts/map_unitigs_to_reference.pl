@@ -22,7 +22,18 @@ my (
     @bwa_mem_cmd_parts
 ) = @ARGV;
 
-my $unitig_distance_results_file_one_based = $unitig_distance_results_file =~ /_1_based/;
+my $unitig_distance_results_file_one_based;
+
+if ($unitig_distance_results_file =~ /\.ud_0_based/) {
+    $unitig_distance_results_file_one_based = 0;
+} elsif ($unitig_distance_results_file =~ /\.ud_1_based/) {
+    $unitig_distance_results_file_one_based = 1;
+} else {
+    die "Failed to detect whether the output uses 0-based or 1-based indices from the filename suffix.";
+}
+
+say "Using " . ($unitig_distance_results_file_one_based ? "1-based" : "0-based") .
+    " unitig indices (detected from the input file suffix).";
 
 # Write BWA-MEM input to a separate file if $write_bwa_mem_input is non-zero.
 my $bwa_mem_input_file = $write_bwa_mem_input
