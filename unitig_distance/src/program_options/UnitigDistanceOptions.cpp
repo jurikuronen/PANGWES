@@ -211,9 +211,13 @@ void UnitigDistanceOptions::print_run_details() const {
         {"  --no-median-distance", m_no_median_distance ? "TRUE" : "FALSE"},
         {"  --output-stem", m_out_stem.empty() ? DEFAULT_OUT_STEM : m_out_stem},
         {"  --output-one-based", m_output_one_based ? "TRUE" : "FALSE"},
-        {"  --memory", Format::pretty_uint(Memory::bytes_to_mebibytes(m_memory_bytes)) + " MiB" },
         {"  --threads", std::to_string(m_n_threads)},
     };
+
+    // Display the memory option only when median distance calculation is enabled.
+    if (!m_no_median_distance) {
+        options.push_back({"  --memory", Format::pretty_uint(Memory::bytes_to_mebibytes(m_memory_bytes)) + " MiB" });
+    }
 
     Log::out_without_date_block() << "\nUsing the following options:" << std::endl;
 
