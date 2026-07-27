@@ -10,6 +10,13 @@ assemblies is available
 Tiny test datasets for checking that the programs work correctly are available in the
 [test data directory](../test_data).
 
+## Table of contents
+
+- [Running the PAN-GWES pipeline](#running-the-pan-gwes-pipeline)
+  - [Example plots](#example-plots)
+- [Performance benchmarks](#performance-benchmarks)
+  - [v0.1.0–v1.0.0 comparison](#v010v100-comparison-2026-07-27)
+
 ## Running the PAN-GWES pipeline
 
 Run the following commands from your working directory, adjusting paths and program options as needed. Set the thread
@@ -22,7 +29,7 @@ ls /path/to/assemblies/* > efc_assemblies.txt
 ```
 
 2. Build a [GFA 1.0](https://github.com/GFA-spec/GFA-spec/blob/master/GFA1.md)-formatted compacted de Bruijn graph
-   with [Cuttlefish](https://github.com/COMBINE-lab/cuttlefish):
+   with [Cuttlefish](https://github.com/COMBINE-lab/cuttlefish), using your choice of k-mer length:
 
 ```
 # Increase the concurrently open file-handle limit as Cuttlefish produces a large number of temporary files.
@@ -98,23 +105,38 @@ For a graph-distance versus reference-genome-distance scatterplot, see the [plot
 
 ### Example plots
 
-The following example plots were drawn from the results:
+The following example plots were drawn from the results. The mean-distance plots are shown on the left and the
+median-distance plots on the right. Click any preview to open the full-size plot.
 
-- [GWES Manhattan plot - mean distance](plots/efc_k61_gwes_plot_mean_distance.png)
+**GWES Manhattan plots**
 
-  [![GWES Manhattan plot - mean distance preview](plots/previews/efc_k61_gwes_plot_mean_distance_preview.png)](plots/efc_k61_gwes_plot_mean_distance.png)
+<p align="center">
+  <a href="plots/efc_k61_gwes_plot_mean_distance.png">
+    <img src="plots/previews/efc_k61_gwes_plot_mean_distance_preview.png"
+         alt="GWES Manhattan plot - mean distance"
+         width="48%">
+  </a>
+  <a href="plots/efc_k61_gwes_plot_median_distance.png">
+    <img src="plots/previews/efc_k61_gwes_plot_median_distance_preview.png"
+         alt="GWES Manhattan plot - median distance"
+         width="48%">
+  </a>
+</p>
 
-- [Mean graph distance vs reference-genome distance plot](plots/efc_k61_mean_graph_distance_vs_reference_genome_distance_plot.png)
+**Graph-distance vs reference-genome distance scatter plots**
 
-  [![Mean graph distance vs reference-genome distance plot preview](plots/previews/efc_k61_mean_graph_distance_vs_reference_genome_distance_plot_preview.png)](plots/efc_k61_mean_graph_distance_vs_reference_genome_distance_plot.png)
-
-- [GWES Manhattan plot - median distance](plots/efc_k61_gwes_plot_median_distance.png)
-
-  [![GWES Manhattan plot - median distance preview](plots/previews/efc_k61_gwes_plot_median_distance_preview.png)](plots/efc_k61_gwes_plot_median_distance.png)
-
-- [Median graph distance vs reference-genome distance plot](plots/efc_k61_median_graph_distance_vs_reference_genome_distance_plot.png)
-
-  [![Median graph distance vs reference-genome distance plot preview](plots/previews/efc_k61_median_graph_distance_vs_reference_genome_distance_plot_preview.png)](plots/efc_k61_median_graph_distance_vs_reference_genome_distance_plot.png)
+<p align="center">
+  <a href="plots/efc_k61_mean_graph_distance_vs_reference_genome_distance_plot.png">
+    <img src="plots/previews/efc_k61_mean_graph_distance_vs_reference_genome_distance_plot_preview.png"
+         alt="Mean graph distance vs reference-genome distance"
+         width="48%">
+  </a>
+  <a href="plots/efc_k61_median_graph_distance_vs_reference_genome_distance_plot.png">
+    <img src="plots/previews/efc_k61_median_graph_distance_vs_reference_genome_distance_plot_preview.png"
+         alt="Median graph distance vs reference-genome distance"
+         width="48%">
+  </a>
+</p>
 
 ## Performance benchmarks
 
@@ -127,6 +149,8 @@ They were run on Ubuntu 24.04 (6.8.0-124-generic) on a system with an AMD Ryzen 
 
 The benchmarks used 375 **Enterococcus faecalis** genomes from the [EFC collection](../test_data/README.md#efc-dataset)
 and 3,069 **Streptococcus pneumoniae** genomes from the [Maela collection](../test_data/README.md#maela-dataset).
+The [GFA 1.0](https://github.com/GFA-spec/GFA-spec/blob/master/GFA1.md)-formatted cdBGs were constructed with
+[Cuttlefish](https://github.com/COMBINE-lab/cuttlefish) using a k-mer length of 61.
 
 Results for v1.0.0 are shown in **bold**.
 
@@ -155,24 +179,24 @@ runtime.
 
 | Dataset   |    Version | Threads |     Runtime | Peak memory usage |
 | --------- | ---------: | ------: | ----------: | ----------------: |
-| EFC       |     v0.1.0 |      16 |     21m 57s |          7.92 GiB |
-| **EFC**   | **v1.0.0** |  **16** | **03m 47s** |      **6.48 GiB** |
-| EFC       |     v0.1.0 |      32 |     16m 52s |          9.00 GiB |
-| **EFC**   | **v1.0.0** |  **32** | **03m 28s** |      **8.06 GiB** |
+| EFC       |     v0.1.0 |      16 |     21m 52s |          7.93 GiB |
+| **EFC**   | **v1.0.0** |  **16** | **03m 42s** |      **6.64 GiB** |
+| EFC       |     v0.1.0 |      32 |     16m 46s |          9.10 GiB |
+| **EFC**   | **v1.0.0** |  **32** | **03m 23s** |      **7.94 GiB** |
 | Maela     |     v0.1.0 |      32 |  1h 50m 49s |         11.65 GiB |
 | **Maela** | **v1.0.0** |  **32** | **16m 17s** |      **9.88 GiB** |
 
-Compared with the v0.1.0 benchmarks, v1.0.0 reduced runtime by 82% and 79% in the 16- and 32-thread EFC benchmarks,
+Compared with the v0.1.0 benchmarks, v1.0.0 reduced runtime by 83% and 80% in the 16- and 32-thread EFC benchmarks,
 respectively, and by 85% in the 32-thread Maela benchmark. Peak memory usage was also lower in the v1.0.0 benchmarks.
 
 ##### Median distances
 
 | Dataset   |    Version | Threads | Memory limit |        Runtime |
 | --------- | ---------: | ------: | -----------: | -------------: |
-| **EFC**   | **v1.0.0** |  **16** |   **20 GiB** |    **04m 37s** |
-| **EFC**   | **v1.0.0** |  **32** |   **20 GiB** |    **04m 21s** |
-| **EFC**   | **v1.0.0** |  **16** |   **56 GiB** |    **04m 13s** |
-| **EFC**   | **v1.0.0** |  **32** |   **56 GiB** |    **03m 51s** |
+| **EFC**   | **v1.0.0** |  **16** |   **20 GiB** |    **04m 30s** |
+| **EFC**   | **v1.0.0** |  **32** |   **20 GiB** |    **04m 20s** |
+| **EFC**   | **v1.0.0** |  **16** |   **56 GiB** |    **04m 05s** |
+| **EFC**   | **v1.0.0** |  **32** |   **56 GiB** |    **03m 50s** |
 | **Maela** | **v1.0.0** |  **32** |   **20 GiB** | **2h 22m 10s** |
 | **Maela** | **v1.0.0** |  **32** |   **56 GiB** |    **43m 27s** |
 
